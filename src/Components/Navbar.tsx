@@ -2,6 +2,7 @@ import * as React from "react";
 import { styled, alpha } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
+import { useNavigate } from "react-router-dom";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -11,6 +12,7 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 
@@ -64,12 +66,20 @@ export default function PrimarySearchAppBar({
   mode,
   toggleHandler,
 }: searchMovies) {
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  const navigateToUser = ():void=>{
+    navigate("./users")
+  }
+  const navigateToHome = ():void=>{
+    navigate("./")
+  }
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -165,7 +175,8 @@ export default function PrimarySearchAppBar({
             variant="h6"
             noWrap
             component="div"
-            sx={{ display: { xs: "none", sm: "block" } }}
+            sx={{ display: { xs: "none", sm: "block" },cursor: "pointer" }}
+            onClick={navigateToHome}
           >
             VRIZE
           </Typography>
@@ -185,6 +196,14 @@ export default function PrimarySearchAppBar({
             </Search>
           </Box>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
+            <IconButton
+              size="large"
+              aria-label="show 4 new mails"
+              color="inherit"
+              onClick={navigateToUser}
+            >
+              <SupervisedUserCircleIcon />
+            </IconButton>
             <IconButton
               size="large"
               aria-label="show 4 new mails"

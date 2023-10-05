@@ -6,12 +6,31 @@ import Home from "./Components/Home";
 import { Box } from "@mui/material";
 import UseChangeMode from "./CustomHooks/UseChangeMode";
 import { TVShow } from "./utils";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ApolloClient, ApolloProvider, InMemoryCache, HttpLink } from '@apollo/client';
+import Users from "./Components/Users";
+import { Toaster } from "react-hot-toast";
+
+const createApolloClient = (authToken: string) => {
+  return new ApolloClient({
+    link: new HttpLink({
+      uri: 'https://exact-cat-49.hasura.app/v1/graphql',
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        'x-hasura-admin-secret': authToken, // or 'x-hasura-access-key' depending on your setup
+      }
+    }),
+    cache: new InMemoryCache(),
+  });
+};
 
 function App() {
-  const [mode, toggleHandler] = UseChangeMode();
 
-  const [moviesData, setmoviesData] = useState<TVShow[] | []>([]);
-  const [defaultMoviesData, setDefaultMoviesData] = useState<TVShow[] | []>([]);
+  const token:string = "wuTIuxNgFGxP3naQp7aN9vDjTIAbK3eXThkVMh5KioL55tLsVgxXQ8ZX0Wz8RX0f"
+  const [client] = useState(() => createApolloClient(token));
+  const [mode, toggleHandler] = UseChangeMode();
+  const [moviesData, setmoviesData] = useState<TVShow[]>([]);
+  const [defaultMoviesData, setDefaultMoviesData] = useState<TVShow[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const scrollToTop = (): void => {
@@ -24,7 +43,7 @@ function App() {
     );
     if (searchedMovies.length > 0 && userSearchInput.length > 0) {
       setmoviesData(searchedMovies);
-    } else if (userSearchInput.length == 0) {
+    } else if (userSearchInput.length === 0) {
       setmoviesData(defaultMoviesData);
     } else {
       setmoviesData([]);
@@ -51,15 +70,28 @@ function App() {
   }, []);
 
   return (
+    <ApolloProvider client={client}>
+      <Toaster />
+      <Router>
     <Box sx={{ backgroundColor: mode ? "black" : "white" }}>
-      <PrimarySearchAppBar
+      <PrimarySearchAppBar  /**its a navbar */
         filterMoviesData={filterMoviesData}
         mode={mode}
         toggleHandler={toggleHandler}
       />
-      <Home moviesData={moviesData} isLoading={isLoading} />
-    </Box>
+      {/* <Home moviesData={moviesData} isLoading={isLoading} /> */}
+    
+    <Routes>
+            <Route path="/" element={<Home moviesData={moviesData} isLoading={isLoading} />} />
+            <Route path="/users" element={<Users />} /> 
+            {/* Add more routes as needed */}
+          </Routes>
+          </Box>
+    </Router>
+    </ApolloProvider>
   );
 }
+// why the properties of box styles not getting applied in home now? like background color
+
 
 export default App;

@@ -51,3 +51,12 @@ export interface TVShow {
       };
     };
   }
+
+  export type toaster ={
+    duration: any;
+    position: any;
+  }
+  export const toastoptions:toaster = {
+    duration: 3000,
+    position: "top-right",
+  };
