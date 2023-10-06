@@ -12,7 +12,8 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import SupervisedUserCircleIcon from '@mui/icons-material/SupervisedUserCircle';
+import SupervisedUserCircleIcon from "@mui/icons-material/SupervisedUserCircle";
+import HomeIcon from '@mui/icons-material/Home';
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 
@@ -74,12 +75,12 @@ export default function PrimarySearchAppBar({
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
-  const navigateToUser = ():void=>{
-    navigate("./users")
-  }
-  const navigateToHome = ():void=>{
-    navigate("./")
-  }
+  const navigateToUser = (): void => {
+    navigate("./users");
+  };
+  const navigateToHome = (): void => {
+    navigate("./");
+  };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -139,6 +140,28 @@ export default function PrimarySearchAppBar({
     >
       <MenuItem
         onClick={() => {
+          navigateToUser();
+          handleMobileMenuClose();
+        }}
+      >
+        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+          <HomeIcon />
+        </IconButton>
+        <p>VRIZE</p>
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          navigateToUser();
+          handleMobileMenuClose();
+        }}
+      >
+        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+          <SupervisedUserCircleIcon />
+        </IconButton>
+        <p>Our Users</p>
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
           toggleHandler();
           handleMobileMenuClose();
         }}
@@ -152,6 +175,7 @@ export default function PrimarySearchAppBar({
         </IconButton>
         <p>Change Mode</p>
       </MenuItem>
+
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
           size="large"
@@ -175,7 +199,7 @@ export default function PrimarySearchAppBar({
             variant="h6"
             noWrap
             component="div"
-            sx={{ display: { xs: "none", sm: "block" },cursor: "pointer" }}
+            sx={{ display: { xs: "none", sm: "block" }, cursor: "pointer" }}
             onClick={navigateToHome}
           >
             VRIZE

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Button,
   Dialog,
@@ -11,6 +11,7 @@ import {
   Box,
   Typography,
 } from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
 import { useMutation, gql, useQuery } from "@apollo/client";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -22,20 +23,27 @@ const validationSchema = Yup.object({
   last_name: Yup.string().required("Last name is required"),
   first_name: Yup.string().required("First name is required"),
   age: Yup.number().required("Age is required"),
-  phone: Yup
-    .string()
+  phone: Yup.string()
     .matches(/^\d{10}$/, "Invalid phone number")
     .required("Phone number is required"),
   user_name: Yup.string().required("User Name is required"),
+  role: Yup.object().shape({
+    label: Yup.string().required("Field is required."),
+    value: Yup.string().required("Field is required."),
+  }),
 });
-
+type roleType = {
+  label: string;
+  value: string;
+};
 interface UserData {
-  id?:string
+  id?: string;
   last_name: string;
   first_name: string;
   age: number | string;
   phone: number | string;
   user_name: string;
+  role: roleType | null;
 }
 
 interface MyDialogProps {
@@ -62,6 +70,14 @@ const ModalData: React.FC<MyDialogProps> = ({
       }
     }
   `;
+  const GET_ROLE_BY_ID = gql`
+    query GET_ROLE_BY_ID($id: uuid!) {
+      Role_by_pk(id: $id) {
+        role_name
+        id
+      }
+    }
+  `;
   const CREATE_OR_UPDATE_USER = gql`
     mutation UpsertUser($id: uuid, $input: Users_insert_input!) {
       insert_Users_one(
@@ -80,13 +96,19 @@ const ModalData: React.FC<MyDialogProps> = ({
       }
     }
   `;
-
+  const getRolesData = gql`
+    {
+      Roles {
+        role_name
+        id
+      }
+    }
+  `;
+  const { loading: rolesLoading, data: rolesData } = useQuery(getRolesData);
   const { loading, error, data, refetch } = useQuery(GET_USER_BY_ID, {
     variables: { id },
     skip: !id || !open, // Skip the query when id is not present
   });
-
-  
 
   const [createOrUpdateUser, { loading: formLoading }] = useMutation(
     CREATE_OR_UPDATE_USER
@@ -99,16 +121,16 @@ const ModalData: React.FC<MyDialogProps> = ({
       age: "",
       phone: "",
       user_name: "",
+      role: null,
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { resetForm }) => {
-      // const userId = id
-      const payload:UserData = {
+      const payload: UserData = {
         id,
-        ...values
-      }
-      if(!id){
-        delete payload.id
+        ...values,
+      };
+      if (!id) {
+        delete payload.id;
       }
       try {
         await createOrUpdateUser({
@@ -129,21 +151,39 @@ const ModalData: React.FC<MyDialogProps> = ({
       }
     },
   });
+  const formikRef = useRef(formik);
 
   useEffect(() => {
-    formik.resetForm();
+    formikRef.current = formik;
+  }, [formik]);
+
+  useEffect(() => {
+    formikRef.current.resetForm();
     if (id) {
       refetch({ id });
     }
   }, [id, refetch]);
 
   useEffect(() => {
+    const handleFormValues = (): void => {
+      formikRef.current.setFieldValue(
+        "last_name",
+        data?.Users_by_pk?.last_name
+      );
+      formikRef.current.setFieldValue(
+        "first_name",
+        data?.Users_by_pk?.first_name
+      );
+      formikRef.current.setFieldValue("age", data?.Users_by_pk?.age);
+      formikRef.current.setFieldValue("phone", data?.Users_by_pk?.phone);
+      formikRef.current.setFieldValue(
+        "user_name",
+        data?.Users_by_pk?.user_name
+      );
+    };
+
     if (data && id) {
-      formik.setFieldValue("last_name", data?.Users_by_pk?.last_name);
-      formik.setFieldValue("first_name", data?.Users_by_pk?.first_name);
-      formik.setFieldValue("age", data?.Users_by_pk?.age);
-      formik.setFieldValue("phone", data?.Users_by_pk?.phone);
-      formik.setFieldValue("user_name", data?.Users_by_pk?.user_name);
+      handleFormValues();
     }
   }, [id, data]);
 
@@ -174,8 +214,10 @@ const ModalData: React.FC<MyDialogProps> = ({
     );
   }
 
+  console.log(rolesData?.Roles);
+
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" >
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>{id ? "Update User" : "Create User"}</DialogTitle>
       <DialogContent>
         <form onSubmit={formik.handleSubmit}>
@@ -225,7 +267,26 @@ const ModalData: React.FC<MyDialogProps> = ({
               helperText={formik.touched.last_name && formik.errors.last_name}
             />
           </FormControl>
-
+          <FormControl fullWidth margin="normal">
+            <Autocomplete
+              disablePortal
+              loading={rolesLoading}
+              id="combo-box-demo"
+              options={rolesData?.Roles.map(
+                (role: { role_name: string; id: string }) => {
+                  return {
+                    label: role.role_name,
+                    value: role.id,
+                  };
+                }
+              )}
+              value={formik.values.role}
+              onChange={(event, value) => {
+                formik.setFieldValue("role", value || {});
+              }}
+              renderInput={(params) => <TextField {...params} label="Role" />}
+            />
+          </FormControl>
           <FormControl fullWidth margin="normal">
             <TextField
               name="age"
@@ -233,7 +294,7 @@ const ModalData: React.FC<MyDialogProps> = ({
               variant="outlined"
               type="number"
               onChange={(e) => {
-                if ((e.target.value).length <= 3) {
+                if (e.target.value.length <= 3) {
                   formik.handleChange(e);
                 }
               }}
