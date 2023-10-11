@@ -10,7 +10,7 @@ import {
   IconButton
 } from "@mui/material";
 import React from "react";
-import { TVShow } from "../utils";
+import { TVShow } from "../../utils";
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
  

@@ -12,99 +12,25 @@ import {
   Typography,
 } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-import { useMutation, gql, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import { toast } from "react-hot-toast";
-import { toastoptions } from "../../utils";
+import { toastoptions } from "../../../utils";
+import { MyDialogProps, UserData, UserDataPayload } from "./Modal.Interface";
+import { validationSchema } from "./utils";
+import { CREATE_OR_UPDATE_USER, GET_USER_BY_ID } from "./Modal.Gql";
 
-// Defined validation schema using Yup
-const validationSchema = Yup.object({
-  last_name: Yup.string().required("Last name is required"),
-  first_name: Yup.string().required("First name is required"),
-  age: Yup.number().required("Age is required"),
-  phone: Yup.string()
-    .matches(/^\d{10}$/, "Invalid phone number")
-    .required("Phone number is required"),
-  user_name: Yup.string().required("User Name is required"),
-  role: Yup.object().shape({
-    label: Yup.string().required("Field is required."),
-    value: Yup.string().required("Field is required."),
-  }),
-});
-type roleType = {
-  label: string;
-  value: string;
-};
-interface UserData {
-  id?: string;
-  last_name: string;
-  first_name: string;
-  age: number | string;
-  phone: number | string;
-  user_name: string;
-  role: roleType | null;
-}
 
-interface MyDialogProps {
-  open: boolean;
-  handleClose: () => void;
-  id: string;
-  refetchUser: any;
-}
 
 const ModalData: React.FC<MyDialogProps> = ({
   open,
   handleClose,
   id,
   refetchUser,
+  statusRoleData,
+  isStatusRoleLoading
 }) => {
-  const GET_USER_BY_ID = gql`
-    query GET_USER_BY_ID($id: uuid!) {
-      Users_by_pk(id: $id) {
-        last_name
-        first_name
-        age
-        phone
-        user_name
-      }
-    }
-  `;
-  const GET_ROLE_BY_ID = gql`
-    query GET_ROLE_BY_ID($id: uuid!) {
-      Role_by_pk(id: $id) {
-        role_name
-        id
-      }
-    }
-  `;
-  const CREATE_OR_UPDATE_USER = gql`
-    mutation UpsertUser($id: uuid, $input: Users_insert_input!) {
-      insert_Users_one(
-        object: $input
-        on_conflict: {
-          constraint: Users_pkey
-          update_columns: [last_name, first_name, age, phone, user_name]
-        }
-      ) {
-        id
-        last_name
-        first_name
-        age
-        phone
-        user_name
-      }
-    }
-  `;
-  const getRolesData = gql`
-    {
-      Roles {
-        role_name
-        id
-      }
-    }
-  `;
-  const { loading: rolesLoading, data: rolesData } = useQuery(getRolesData);
+
   const { loading, error, data, refetch } = useQuery(GET_USER_BY_ID, {
     variables: { id },
     skip: !id || !open, // Skip the query when id is not present
@@ -121,13 +47,26 @@ const ModalData: React.FC<MyDialogProps> = ({
       age: "",
       phone: "",
       user_name: "",
-      role: null,
+      role: {
+        label: "",
+        value: "",
+      },
+      status: {
+        label: "",
+        value: "",
+      },
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { resetForm }) => {
-      const payload: UserData = {
+      const payload: UserDataPayload = {
         id,
-        ...values,
+        last_name: values?.last_name,
+        first_name: values?.first_name,
+        age: values?.age,
+        phone: values?.phone,
+        user_name: values?.user_name,
+        role_id: values?.role?.value,
+        status_id: values?.status?.value,
       };
       if (!id) {
         delete payload.id;
@@ -180,6 +119,14 @@ const ModalData: React.FC<MyDialogProps> = ({
         "user_name",
         data?.Users_by_pk?.user_name
       );
+      formikRef.current.setFieldValue("role", {
+        label: data?.Users_by_pk?.getRoleById?.role_name,
+        value: data?.Users_by_pk?.getRoleById?.id,
+      });
+      formikRef.current.setFieldValue("status", {
+        label: data?.Users_by_pk?.getStatusById?.status_value || "",
+        value: data?.Users_by_pk?.getStatusById?.id || "",
+      });
     };
 
     if (data && id) {
@@ -213,8 +160,6 @@ const ModalData: React.FC<MyDialogProps> = ({
       </Box>
     );
   }
-
-  console.log(rolesData?.Roles);
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -270,9 +215,9 @@ const ModalData: React.FC<MyDialogProps> = ({
           <FormControl fullWidth margin="normal">
             <Autocomplete
               disablePortal
-              loading={rolesLoading}
+              loading={isStatusRoleLoading}
               id="combo-box-demo"
-              options={rolesData?.Roles.map(
+              options={statusRoleData?.Roles.map(
                 (role: { role_name: string; id: string }) => {
                   return {
                     label: role.role_name,
@@ -282,9 +227,36 @@ const ModalData: React.FC<MyDialogProps> = ({
               )}
               value={formik.values.role}
               onChange={(event, value) => {
-                formik.setFieldValue("role", value || {});
+                formik.setFieldValue("role", value || { label: "", value: "" });
               }}
-              renderInput={(params) => <TextField {...params} label="Role" />}
+              renderInput={(params) => (
+                <TextField {...params} label="Role" name="role" />
+              )}
+            />
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <Autocomplete
+              disablePortal
+              loading={isStatusRoleLoading}
+              id="combo-box-demo"
+              options={statusRoleData?.Status.map(
+                (status: { status_value: string; id: string }) => {
+                  return {
+                    label: status.status_value,
+                    value: status.id,
+                  };
+                }
+              )}
+              value={formik.values.status}
+              onChange={(event, value) => {
+                formik.setFieldValue(
+                  "status",
+                  value || { label: "", value: "" }
+                );
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Status" name="status" />
+              )}
             />
           </FormControl>
           <FormControl fullWidth margin="normal">

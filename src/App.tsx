@@ -1,32 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState} from "react";
+import { MyProvider } from "./FilterUsers";
 import "./App.css";
-import PrimarySearchAppBar from "./Components/Navbar";
+import PrimarySearchAppBar from "./Components/Navbar/Navbar";
 import axios from "axios";
-import Home from "./Components/Home";
+import Home from "./Components/Home/Home";
 import { Box } from "@mui/material";
 import UseChangeMode from "./CustomHooks/UseChangeMode";
 import { TVShow } from "./utils";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ApolloClient, ApolloProvider, InMemoryCache, HttpLink } from '@apollo/client';
-import Users from "./Components/Users";
+import {
+  ApolloClient,
+  ApolloProvider,
+  InMemoryCache,
+  HttpLink,
+} from "@apollo/client";
+import Users from "./Components/Users/Users";
 import { Toaster } from "react-hot-toast";
 
 const createApolloClient = (authToken: string) => {
   return new ApolloClient({
     link: new HttpLink({
-      uri: 'https://exact-cat-49.hasura.app/v1/graphql',
+      uri: "https://exact-cat-49.hasura.app/v1/graphql",
       headers: {
         Authorization: `Bearer ${authToken}`,
-        'x-hasura-admin-secret': authToken, // or 'x-hasura-access-key' depending on your setup
-      }
+        "x-hasura-admin-secret": authToken, // or 'x-hasura-access-key' depending on your setup
+      },
     }),
     cache: new InMemoryCache(),
   });
 };
 
 function App() {
-
-  const token:string = "wuTIuxNgFGxP3naQp7aN9vDjTIAbK3eXThkVMh5KioL55tLsVgxXQ8ZX0Wz8RX0f"
+  const token: string =
+    "wuTIuxNgFGxP3naQp7aN9vDjTIAbK3eXThkVMh5KioL55tLsVgxXQ8ZX0Wz8RX0f";
   const [client] = useState(() => createApolloClient(token));
   const [mode, toggleHandler] = UseChangeMode();
   const [moviesData, setmoviesData] = useState<TVShow[]>([]);
@@ -62,36 +68,36 @@ function App() {
       .catch((error) => {
         console.log(error);
       })
-      .finally(() =>{
+      .finally(() => {
         setTimeout(() => {
-          setIsLoading(false)
+          setIsLoading(false);
         }, 1000);
-      } );
+      });
   }, []);
 
   return (
-    <ApolloProvider client={client}>
-      <Toaster />
-      <Router>
-    <Box sx={{ backgroundColor: mode ? "black" : "white" }}>
-      <PrimarySearchAppBar  /**its a navbar */
-        filterMoviesData={filterMoviesData}
-        mode={mode}
-        toggleHandler={toggleHandler}
-      />
-      {/* <Home moviesData={moviesData} isLoading={isLoading} /> */}
-    
-    <Routes>
-            <Route path="/" element={<Home moviesData={moviesData} isLoading={isLoading} />} />
-            <Route path="/users" element={<Users />} /> 
-            {/* Add more routes as needed */}
-          </Routes>
+    <MyProvider>
+      <ApolloProvider client={client}>
+        <Toaster />
+        <Router>
+          <Box sx={{ backgroundColor: mode ? "black" : "white" }}>
+            <PrimarySearchAppBar /**its a navbar */
+              filterMoviesData={filterMoviesData}
+              mode={mode}
+              toggleHandler={toggleHandler}
+            />
+            <Routes>
+              <Route
+                path="/"
+                element={<Home moviesData={moviesData} isLoading={isLoading} />}
+              />
+              <Route path="/users" element={<Users />} />
+            </Routes>
           </Box>
-    </Router>
-    </ApolloProvider>
+        </Router>
+      </ApolloProvider>
+    </MyProvider>
   );
 }
-// why the properties of box styles not getting applied in home now? like background color
-
 
 export default App;

@@ -1,24 +1,16 @@
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { Box, Button, Modal, Typography } from "@mui/material";
 import React from "react";
 import toast from "react-hot-toast";
-import { toastoptions } from "../../utils";
+import { toastoptions } from "../../../utils";
+import { deleteModalType } from "./DeleteModal.Interface";
+import { DELETE_USER } from "./DeleteModal.Gql";
 
-type deleteModalType = {
-  open: boolean;
-  handleClose: () => void;
-  id: string;
-  updateUser: any;
-};
+
 const DeleteModal = ({ open, handleClose, id, updateUser }: deleteModalType) => {
-  const DELETE_USER = gql`
-    mutation DeleteUser($id: uuid!) {
-      delete_Users_by_pk(id: $id) {
-        id
-      }
-    }
-  `;
-  const [deleteUserMutation,{loading}] = useMutation(DELETE_USER);
+
+  const [deleteUserMutation,{loading:isDeleteUserLoading}] = useMutation(DELETE_USER);
+  
   const handleDeleteUser = async () => {
     try {
       await deleteUserMutation({
@@ -59,7 +51,7 @@ const DeleteModal = ({ open, handleClose, id, updateUser }: deleteModalType) => 
         </Typography>
         <Box sx={{ mt: 2, display: "flex", justifyContent: "end", gap: 2 }}>
           <Button
-          disabled={loading}
+          disabled={isDeleteUserLoading}
             onClick={handleDeleteUser}
             variant="contained"
             color="error"
