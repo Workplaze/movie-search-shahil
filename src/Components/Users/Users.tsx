@@ -156,9 +156,7 @@ const Users = () => {
             }
           )}
           onChange={(event, value: roleAndStatusType | null) => {
-            value?.value
-              ? handleStatusChange(value?.value)
-              : handleStatusChange("");
+            handleStatusChange(value?.value ?? "")
           }}
           renderInput={(params) => (
             <TextField {...params} label="Status" name="status" />
@@ -177,9 +175,7 @@ const Users = () => {
             }
           )}
           onChange={(event, value: roleAndStatusType | null) => {
-            value?.value
-              ? handleRolesChange(value?.value)
-              : handleRolesChange("");
+            handleRolesChange(value?.value ?? "")
           }}
           renderInput={(params) => (
             <TextField {...params} label="Role" name="Role" />
