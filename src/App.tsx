@@ -81,7 +81,7 @@ function App() {
         <Toaster />
         <Router>
           <Box sx={{ backgroundColor: mode ? "black" : "white" }}>
-            <PrimarySearchAppBar /**its a navbar */
+            <PrimarySearchAppBar
               filterMoviesData={filterMoviesData}
               mode={mode}
               toggleHandler={toggleHandler}
