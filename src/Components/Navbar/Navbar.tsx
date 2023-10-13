@@ -2,6 +2,7 @@ import * as React from "react";
 import { styled, alpha } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
+import { useNavigate } from "react-router-dom";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -11,6 +12,8 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import SupervisedUserCircleIcon from "@mui/icons-material/SupervisedUserCircle";
+import HomeIcon from "@mui/icons-material/Home";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 
@@ -43,7 +46,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
@@ -64,12 +66,20 @@ export default function PrimarySearchAppBar({
   mode,
   toggleHandler,
 }: searchMovies) {
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  const navigateToUser = (): void => {
+    navigate("./users");
+  };
+  const navigateToHome = (): void => {
+    navigate("./");
+  };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -129,6 +139,28 @@ export default function PrimarySearchAppBar({
     >
       <MenuItem
         onClick={() => {
+          navigateToUser();
+          handleMobileMenuClose();
+        }}
+      >
+        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+          <HomeIcon />
+        </IconButton>
+        <p>VRIZE</p>
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
+          navigateToUser();
+          handleMobileMenuClose();
+        }}
+      >
+        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+          <SupervisedUserCircleIcon />
+        </IconButton>
+        <p>Our Users</p>
+      </MenuItem>
+      <MenuItem
+        onClick={() => {
           toggleHandler();
           handleMobileMenuClose();
         }}
@@ -142,6 +174,7 @@ export default function PrimarySearchAppBar({
         </IconButton>
         <p>Change Mode</p>
       </MenuItem>
+
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
           size="large"
@@ -165,7 +198,8 @@ export default function PrimarySearchAppBar({
             variant="h6"
             noWrap
             component="div"
-            sx={{ display: { xs: "none", sm: "block" } }}
+            sx={{ display: { xs: "none", sm: "block" }, cursor: "pointer" }}
+            onClick={navigateToHome}
           >
             VRIZE
           </Typography>
@@ -185,6 +219,14 @@ export default function PrimarySearchAppBar({
             </Search>
           </Box>
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
+            <IconButton
+              size="large"
+              aria-label="show 4 new mails"
+              color="inherit"
+              onClick={navigateToUser}
+            >
+              <SupervisedUserCircleIcon />
+            </IconButton>
             <IconButton
               size="large"
               aria-label="show 4 new mails"

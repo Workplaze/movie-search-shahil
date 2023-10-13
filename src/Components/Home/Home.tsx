@@ -10,12 +10,12 @@ import {
   IconButton
 } from "@mui/material";
 import React from "react";
-import { TVShow } from "../utils";
+import { TVShow } from "../../utils";
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
-
-
-const Home = ({ moviesData,isLoading }: { moviesData: TVShow[],isLoading:boolean }) => {
+ 
+const Home = ({ moviesData=[],isLoading }: { moviesData: TVShow[],isLoading:boolean }) => {
+ 
     const scrollToTop = ():void => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
@@ -36,6 +36,7 @@ const Home = ({ moviesData,isLoading }: { moviesData: TVShow[],isLoading:boolean
         );
       }
   return (
+    
     <Container sx={{ py: "150px" }}>
       <Box
         rowGap={3}

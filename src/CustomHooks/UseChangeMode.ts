@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-const useChangeMode = (): [boolean, () => void] => {
+type useChangemodeHook =[boolean, () => void]
+const useChangeMode = (): useChangemodeHook => {
   const [mode, setMode] = useState<boolean>(true);
 
   const toggleHandler = (): void => {
